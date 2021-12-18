@@ -6,10 +6,10 @@ pygame.init()
 bg_color = (192, 192, 192)
 grid_color = (128, 128, 128)
 
-game_width = 10  # Change this to increase size
-game_height = 10  # Change this to increase size
-numMine = 9  # Number of mines
-grid_size = 32  # Size of grid (WARNING: macke sure to change the images dimension as well)
+game_width = 16  # Change this to increase size
+game_height = 16  # Change this to increase size
+numMine = 40  # Number of mines
+grid_size = 32  # Size of grid (WARNING: make sure to change the images dimension as well)
 border = 16  # Top border
 top_border = 100  # Left, Right, Bottom border
 display_width = grid_size * game_width + border * 2  # Display width
@@ -17,14 +17,19 @@ display_height = grid_size * game_height + border + top_border  # Display height
 gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
 timer = pygame.time.Clock()  # Create timer
 pygame.display.set_caption("Minesweeper")  # S Set the caption of window
+spr_grid = pygame.image.load("data/sprites/Grid.png")
+spr_grid1 = pygame.image.load("data/sprites/grid1.png")
+spr_grid2 = pygame.image.load("data/sprites/grid2.png")
+spr_grid3 = pygame.image.load("data/sprites/grid3.png")
 
 font_small = pygame.font.Font('data/fonts/font.otf', 32)
 
 COOLGREY = (99, 118, 141)
 
+rx = display_width/2 - border
+ry = border
+
 pygame.display.set_caption('Scuffed Minesweeper')
-
-
 
 # Create global values
 grid = []  # The main grid
@@ -36,7 +41,18 @@ def drawText(txt, s, yOff=0):
     rect.center = (game_width * grid_size / 2 + border, game_height * grid_size / 2 + top_border + yOff)
     gameDisplay.blit(screen_text, rect)
 
+def check_collision(ax, ay, bx, by):
+    p = 32 #sprite size
+    return (ax + p > bx) and (ax < bx + p) and (ay + p > by) and (ay < by + p)
+
 def main():
+    global numMine
+    global game_width
+    global game_height
+    global gameDisplay
+    global display_width
+    global display_height
+    
     gameState = "Playing"  # Game state
     mineLeft = numMine  # Number of mine left
     global grid  # Access global var
@@ -88,12 +104,50 @@ def main():
                 gameState = "Exit"
             # Check if play restart
             if gameState == "Game Over" or gameState == "Win":
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mx = pygame.mouse.get_pos()[0]
+                    my = pygame.mouse.get_pos()[1]
+                    if check_collision(mx, my, rx, ry):
+                        gameState = "Exit"
+                        main()
+                    elif check_collision(mx, my, rx - 32, ry + 42):
+                        game_width = 9
+                        game_height = 9
+                        numMine = 10
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Exit"
+                        main()
+                    elif check_collision(mx, my, rx, ry + 42):
+                        game_width = 16
+                        game_height = 16
+                        numMine = 40
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Exit"
+                        main()
+                    elif check_collision(mx, my, rx + 32, ry + 42):
+                        game_width = 30
+                        game_height = 16
+                        numMine = 99
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Exit"
+                        main()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         gameState = "Exit"
                         main()
             else:
                 if event.type == pygame.MOUSEBUTTONUP:
+                    mx = pygame.mouse.get_pos()[0]
+                    my = pygame.mouse.get_pos()[1]
+                    if check_collision(mx, my, rx, ry):
+                        gameState = "Exit"
+                        main()
                     for i in grid:
                         for j in i:
                             if j.rect.collidepoint(event.pos):
@@ -155,6 +209,11 @@ def main():
         # Draw mine left
         screen_text = font_small.render(mineLeft.__str__(), True, (0, 0, 0))
         gameDisplay.blit(screen_text, (display_width - border - 30, border))
+        # Restart key
+        gameDisplay.blit(spr_grid, (rx, ry))
+        gameDisplay.blit(spr_grid1, (rx - 32, ry + 42))
+        gameDisplay.blit(spr_grid2, (rx, ry + 42))
+        gameDisplay.blit(spr_grid3, (rx + 32, ry + 42))
 
         pygame.display.update()  # Update screen
 

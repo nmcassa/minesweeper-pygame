@@ -1,7 +1,7 @@
 import pygame
 
-game_width = 10
-game_height = 10
+game_width = 16
+game_height = 16
 border = 16
 top_border = 100
 grid_size = 32
