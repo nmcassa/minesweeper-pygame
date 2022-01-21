@@ -1,5 +1,6 @@
 import pygame, sys, random
 from pygame.locals import *
+from grid import *
 from grid import Grid
 pygame.init()
 
@@ -26,14 +27,12 @@ font_small = pygame.font.Font('data/fonts/font.otf', 32)
 
 COOLGREY = (99, 118, 141)
 
-rx = display_width/2 - border
-ry = border
-
 pygame.display.set_caption('Scuffed Minesweeper')
 
 # Create global values
 grid = []  # The main grid
 mines = []  # Pos of the mines
+gameState = "Splash"  # Game state
 
 def drawText(txt, s, yOff=0):
     screen_text = font_small.render(txt, True, (0, 0, 0))
@@ -52,17 +51,68 @@ def main():
     global gameDisplay
     global display_width
     global display_height
+    global gameState
+
+    rx = display_width/2 - border
+    ry = border
     
-    gameState = "Playing"  # Game state
     mineLeft = numMine  # Number of mine left
     global grid  # Access global var
     grid = []
     global mines
     t = 0  # Set time to 0
 
+    while gameState == "Splash":
+        gameDisplay.fill(bg_color)
+        gameDisplay.blit(spr_grid1, (rx - 32, ry))
+        gameDisplay.blit(spr_grid2, (rx, ry))
+        gameDisplay.blit(spr_grid3, (rx + 32, ry))
+        for event in pygame.event.get():
+            # Check if player close window
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            else:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mx = pygame.mouse.get_pos()[0]
+                    my = pygame.mouse.get_pos()[1]
+                    if check_collision(mx, my, rx - 32, ry):
+                        numMine = 10
+                        game_width = 9
+                        game_height = 9
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Playing"
+                        main()
+                    elif check_collision(mx, my, rx, ry):
+                        numMine = 40
+                        game_width = 16
+                        game_height = 16
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Playing"
+                        main()
+                    elif check_collision(mx, my, rx + 32, ry):
+                        numMine = 99
+                        game_width = 30
+                        game_height = 16
+                        display_width = grid_size * game_width + border * 2  # Display width
+                        display_height = grid_size * game_height + border + top_border  # Display height
+                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
+                        gameState = "Playing"
+                        main()
+                        
+
+            pygame.display.update()  # Update screen
+    
     # Generating mines
     mines = [[random.randrange(0, game_width),
               random.randrange(0, game_height)]]
+
+    rx = display_width/2 - border
+    ry = border
 
     for c in range(numMine - 1):
         pos = [random.randrange(0, game_width),
@@ -90,10 +140,11 @@ def main():
     # Update of the grid
     for i in grid:
         for j in i:
-            j.updateValue(grid)
+            j.updateValue(grid, game_width, game_height)
 
+    gameState = "Playing"
     # Main Loop
-    while gameState != "Exit":
+    while gameState != "Exit" and gameState != "Splash":
         # Reset screen
         gameDisplay.fill(bg_color)
 
@@ -102,39 +153,14 @@ def main():
             # Check if player close window
             if event.type == pygame.QUIT:
                 gameState = "Exit"
+                pygame.quit()
+                sys.exit()
             # Check if play restart
             if gameState == "Game Over" or gameState == "Win":
                 if event.type == pygame.MOUSEBUTTONUP:
                     mx = pygame.mouse.get_pos()[0]
                     my = pygame.mouse.get_pos()[1]
                     if check_collision(mx, my, rx, ry):
-                        gameState = "Exit"
-                        main()
-                    elif check_collision(mx, my, rx - 32, ry + 42):
-                        game_width = 9
-                        game_height = 9
-                        numMine = 10
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
-                        gameState = "Exit"
-                        main()
-                    elif check_collision(mx, my, rx, ry + 42):
-                        game_width = 16
-                        game_height = 16
-                        numMine = 40
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
-                        gameState = "Exit"
-                        main()
-                    elif check_collision(mx, my, rx + 32, ry + 42):
-                        game_width = 30
-                        game_height = 16
-                        numMine = 99
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
                         gameState = "Exit"
                         main()
                 if event.type == pygame.KEYDOWN:
@@ -157,9 +183,9 @@ def main():
                                         continue
                                     if j.val != 0 and j.clicked:
                                         #cording
-                                        j.cord(grid, mines)
+                                        j.cord(grid, mines, game_width, game_height)
                                     # If player left clicked of the grid
-                                    j.revealGrid(grid, mines)
+                                    j.revealGrid(grid, mines, game_width, game_height)
                                     # If it's a mine
                                     if j.val == -1:
                                         gameState = "Game Over"
@@ -211,9 +237,6 @@ def main():
         gameDisplay.blit(screen_text, (display_width - border - 30, border))
         # Restart key
         gameDisplay.blit(spr_grid, (rx, ry))
-        gameDisplay.blit(spr_grid1, (rx - 32, ry + 42))
-        gameDisplay.blit(spr_grid2, (rx, ry + 42))
-        gameDisplay.blit(spr_grid3, (rx + 32, ry + 42))
 
         pygame.display.update()  # Update screen
 

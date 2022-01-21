@@ -79,7 +79,7 @@ class Grid:
                 else:
                     gameDisplay.blit(spr_grid, self.rect)
 
-    def revealGrid(self, grid, mines):
+    def revealGrid(self, grid, mines, game_width, game_height):
         self.clicked = True
         # Auto reveal if it's a 0
         if self.val == 0:
@@ -88,14 +88,14 @@ class Grid:
                     for y in range(-1, 2):
                         if self.yGrid + y >= 0 and self.yGrid + y < game_height:
                             if not grid[self.yGrid + y][self.xGrid + x].clicked:
-                                grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, mines)
+                                grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, mines, game_width, game_height)
         elif self.val == -1:
             # Auto reveal all mines if it's a mine
             for m in mines:
                 if not grid[m[1]][m[0]].clicked:
-                    grid[m[1]][m[0]].revealGrid(grid, mines)
+                    grid[m[1]][m[0]].revealGrid(grid, mines, game_width, game_height)
 
-    def updateValue(self, grid):
+    def updateValue(self, grid, game_width, game_height):
         # Update the value when all grid is generated
         if self.val != -1:
             for x in range(-1, 2):
@@ -105,7 +105,7 @@ class Grid:
                             if grid[self.yGrid + y][self.xGrid + x].val == -1:
                                 self.val += 1
 
-    def cord(self, grid, mines):
+    def cord(self, grid, mines, game_width, game_height):
         flags = 0
         for x in range(-1, 2):
             if self.xGrid + x >= 0 and self.xGrid + x < game_width:
@@ -120,4 +120,4 @@ class Grid:
                     for y in range(-1, 2):
                         if self.yGrid + y >= 0 and self.yGrid + y < game_height:
                             if not grid[self.yGrid + y][self.xGrid + x].clicked and not grid[self.yGrid + y][self.xGrid + x].flag:
-                                grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, mines)
+                                grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, mines, game_width, game_height)
