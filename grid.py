@@ -91,9 +91,10 @@ class Grid:
                                 grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, mines, game_width, game_height)
         elif self.val == -1:
             # Auto reveal all mines if it's a mine
+            self.mineClicked = True
             for m in mines:
                 if not grid[m[1]][m[0]].clicked:
-                    grid[m[1]][m[0]].revealGrid(grid, mines, game_width, game_height)
+                    grid[m[1]][m[0]].clicked = True
 
     def updateValue(self, grid, game_width, game_height):
         # Update the value when all grid is generated

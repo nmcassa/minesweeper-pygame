@@ -25,14 +25,12 @@ spr_grid3 = pygame.image.load("data/sprites/grid3.png")
 
 font_small = pygame.font.Font('data/fonts/font.otf', 32)
 
-COOLGREY = (99, 118, 141)
-
 pygame.display.set_caption('Scuffed Minesweeper')
 
 # Create global values
 grid = []  # The main grid
 mines = []  # Pos of the mines
-gameState = "Splash"  # Game state
+gameState = "Playing"  # Game state
 
 def drawText(txt, s, yOff=0):
     screen_text = font_small.render(txt, True, (0, 0, 0))
@@ -45,68 +43,12 @@ def check_collision(ax, ay, bx, by):
     return (ax + p > bx) and (ax < bx + p) and (ay + p > by) and (ay < by + p)
 
 def main():
-    global numMine
-    global game_width
-    global game_height
-    global gameDisplay
-    global display_width
-    global display_height
-    global gameState
-
-    rx = display_width/2 - border
-    ry = border
-    
     mineLeft = numMine  # Number of mine left
     global grid  # Access global var
     grid = []
     global mines
     t = 0  # Set time to 0
 
-    while gameState == "Splash":
-        gameDisplay.fill(bg_color)
-        gameDisplay.blit(spr_grid1, (rx - 32, ry))
-        gameDisplay.blit(spr_grid2, (rx, ry))
-        gameDisplay.blit(spr_grid3, (rx + 32, ry))
-        for event in pygame.event.get():
-            # Check if player close window
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            else:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    mx = pygame.mouse.get_pos()[0]
-                    my = pygame.mouse.get_pos()[1]
-                    if check_collision(mx, my, rx - 32, ry):
-                        numMine = 10
-                        game_width = 9
-                        game_height = 9
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
-                        gameState = "Playing"
-                        main()
-                    elif check_collision(mx, my, rx, ry):
-                        numMine = 40
-                        game_width = 16
-                        game_height = 16
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
-                        gameState = "Playing"
-                        main()
-                    elif check_collision(mx, my, rx + 32, ry):
-                        numMine = 99
-                        game_width = 30
-                        game_height = 16
-                        display_width = grid_size * game_width + border * 2  # Display width
-                        display_height = grid_size * game_height + border + top_border  # Display height
-                        gameDisplay = pygame.display.set_mode((display_width, display_height))  # Create display
-                        gameState = "Playing"
-                        main()
-                        
-
-            pygame.display.update()  # Update screen
-    
     # Generating mines
     mines = [[random.randrange(0, game_width),
               random.randrange(0, game_height)]]
@@ -143,8 +85,9 @@ def main():
             j.updateValue(grid, game_width, game_height)
 
     gameState = "Playing"
+    
     # Main Loop
-    while gameState != "Exit" and gameState != "Splash":
+    while gameState != "Exit":
         # Reset screen
         gameDisplay.fill(bg_color)
 
@@ -214,15 +157,11 @@ def main():
         if gameState != "Game Over" and gameState != "Win":
             t += 1
         elif gameState == "Game Over":
-            drawText("Game Over!", 50)
-            drawText("R to restart", 35, 50)
             for i in grid:
                 for j in i:
                     if j.flag and j.val != -1:
                         j.mineFalse = True
         else:
-            drawText("You WON!", 50)
-            drawText("R to restart", 35, 50)
             for i in grid:
                 for j in i:
                     if not j.flag and j.val == -1:
